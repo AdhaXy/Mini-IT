@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Viewing Scheduler</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="top">
+    <h1>Smart Viewing Scheduler</h1>
+    <p>Tell us where you start and which properties you want to see. We will plan the visit order for you.</p>
+  </header>
+
+  <main>
+    {% if errors %}
+    <div class="errors" role="alert">
+      <strong>Fix these before planning your tour:</strong>
+      <ul>
+        {% for message in errors %}<li>{{ message }}</li>{% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('plan') }}" novalidate>
+      <section class="panel">
+        <h2>Tour setup</h2>
+        <div class="field">
+          <label for="start_location">Starting address or landmark</label>
+          <input id="start_location" name="start_location" type="text"
+                 placeholder="e.g. Multimedia University, Cyberjaya"
+                 value="{{ form.get('start_location', '') }}">
+        </div>
+        <div class="field short">
+          <label for="start_time">Tour start time</label>
+          <input id="start_time" name="start_time" type="time"
+                 value="{{ form.get('start_time', '09:00') }}">
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Properties to visit</h2>
+        <div id="property-list" data-max="{{ max_properties }}">
+          {% for p in properties %}
+          <div class="property-row">
+            <div class="row-head">
+              <span class="row-number">Property {{ loop.index }}</span>
+              <button type="button" class="link-btn remove-row">Remove</button>
+            </div>
+            <div class="field">
+              <label>Title</label>
+              <input name="title" type="text" placeholder="e.g. Condo at Cyberjaya City Centre" value="{{ p.title }}">
+            </div>
+            <div class="field">
+              <label>Address</label>
+              <input name="address" type="text" placeholder="Full address" value="{{ p.address }}">
+            </div>
+            <div class="field short">
+              <label>Viewing time (minutes)</label>
+              <input name="duration" type="number" min="5" max="240" value="{{ p.duration }}">
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <button type="button" id="add-row" class="secondary">Add another property</button>
+      </section>
+
+      <button type="submit" class="primary">Plan my tour</button>
+    </form>
+
+    {% if tour %}
+    <section class="panel result">
+      <h2>Your request is valid</h2>
+      <p>Starting from <strong>{{ tour.start_location }}</strong> at <strong>{{ tour.start_time }}</strong>.</p>
+      <ol>
+        {% for p in tour.properties %}
+        <li><strong>{{ p.title }}</strong>, {{ p.address }} ({{ p.duration }} min)</li>
+        {% endfor %}
+      </ol>
+      <p class="note">The optimised route and timeline will appear here once the backend and timeline code are connected.</p>
+    </section>
+    {% endif %}
+  </main>
+
+  <template id="row-template">
+    <div class="property-row">
+      <div class="row-head">
+        <span class="row-number">Property</span>
+        <button type="button" class="link-btn remove-row">Remove</button>
+      </div>
+      <div class="field">
+        <label>Title</label>
+        <input name="title" type="text" placeholder="e.g. Condo at Cyberjaya City Centre">
+      </div>
+      <div class="field">
+        <label>Address</label>
+        <input name="address" type="text" placeholder="Full address">
+      </div>
+      <div class="field short">
+        <label>Viewing time (minutes)</label>
+        <input name="duration" type="number" min="5" max="240" value="30">
+      </div>
+    </div>
+  </template>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
